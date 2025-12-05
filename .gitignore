@@ -6,4 +6,4 @@ coverage
 dist
 tmp
 *.pid
-
+package-lock.json
