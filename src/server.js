@@ -20,8 +20,9 @@ require('./models/Admin');
 // Import routes
 const seedRoutes = require('./routes/seedRoutes');
 const accountRoutes = require('./routes/accountRoutes');
-const TransactionDetailRoutes = require('./routes/transactionDetailsRoutes');
 const adminAuthRoutes = require('./routes/adminAuthRoutes');
+const TransactionDetailRoutes = require('./routes/transactionDetailsRoutes')
+const uploadRoutes = require("./routes/ipfsRoutes");
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -42,6 +43,8 @@ app.use('/seed', seedRoutes);
 app.use('/create_eth_account', accountRoutes);
 app.use('/get_Transaction_details', TransactionDetailRoutes);
 app.use('/admin/auth', adminAuthRoutes);
+app.use("/upload", uploadRoutes);
+
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
