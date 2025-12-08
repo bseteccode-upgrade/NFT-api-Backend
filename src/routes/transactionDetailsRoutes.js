@@ -8,6 +8,10 @@ const {
   getTransactionStatus,
   getTokenIdsFromTransaction,
 } = require('../controllers/transactionDetailsController');
+const { authenticateAdmin } = require('../middleware/adminAuthMiddleware');
+
+// Protect all transaction routes with admin authentication
+router.use(authenticateAdmin);
 
 // GET /get_Transaction_status/:txHash - Check transaction status (must be before /:txHash route)
 router.get('/status/:txHash', getTransactionStatus);

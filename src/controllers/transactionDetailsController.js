@@ -11,6 +11,7 @@
  */
 const { ethers } = require('ethers');
 const { getRpcParams, getRpcResponse } = require('../utils/transaction');
+const { hashAdminId } = require('../utils/encryption');
 
 function isValidTxHash(hash) {
   return typeof hash === 'string' && /^0x[a-fA-F0-9]{64}$/.test(hash);
@@ -56,9 +57,13 @@ async function getTransactionDetails(req, res, next) {
 
     const tx = data.result;
 
+    // Get hashed admin ID from authenticated admin
+    const hashedAdminId = req.admin ? hashAdminId(req.admin.id) : null;
+
     return res.json({
       txHash,
       network: 'arbitrum-sepolia',
+      adminId: hashedAdminId,
       raw: tx,
       from: tx.from,
       to: tx.to,
@@ -115,10 +120,12 @@ async function getTransactionStatus(req, res, next) {
     }
 
     if (!txData.result) {
+      const hashedAdminId = req.admin ? hashAdminId(req.admin.id) : null;
       return res.json({
         txHash,
         status: 'not_found',
         message: 'Transaction not found on the network.',
+        adminId: hashedAdminId,
       });
     }
 
@@ -126,10 +133,12 @@ async function getTransactionStatus(req, res, next) {
 
     // If transaction exists but not in a block yet, it's pending
     if (!tx.blockNumber || tx.blockNumber === null) {
+      const hashedAdminId = req.admin ? hashAdminId(req.admin.id) : null;
       return res.json({
         txHash,
         status: 'pending',
         message: 'Transaction is pending and not yet included in a block.',
+        adminId: hashedAdminId,
         from: tx.from,
         to: tx.to,
         value: tx.value,
@@ -155,10 +164,12 @@ async function getTransactionStatus(req, res, next) {
     }
 
     if (!receiptData.result) {
+      const hashedAdminId = req.admin ? hashAdminId(req.admin.id) : null;
       return res.json({
         txHash,
         status: 'pending',
         message: 'Transaction is in a block but receipt not yet available.',
+        adminId: hashedAdminId,
         blockNumber: tx.blockNumber,
       });
     }
@@ -169,12 +180,15 @@ async function getTransactionStatus(req, res, next) {
     const statusCode = receipt.status;
     const isSuccess = statusCode === '0x1' || statusCode === '0x01' || parseInt(statusCode, 16) === 1;
 
+    const hashedAdminId = req.admin ? hashAdminId(req.admin.id) : null;
+
     return res.json({
       txHash,
       status: isSuccess ? 'confirmed' : 'failed',
       message: isSuccess
         ? 'Transaction confirmed and succeeded.'
         : 'Transaction confirmed but failed (reverted).',
+      adminId: hashedAdminId,
       blockNumber: receipt.blockNumber,
       blockHash: receipt.blockHash,
       from: receipt.from,
@@ -252,8 +266,10 @@ async function getTokenIdsFromTransaction(req, res, next) {
     const logs = receipt.logs || [];
 
     if (logs.length === 0) {
+      const hashedAdminId = req.admin ? hashAdminId(req.admin.id) : null;
       return res.json({
         txHash,
+        adminId: hashedAdminId,
         tokenIds: [],
       });
     }
@@ -283,8 +299,11 @@ async function getTokenIdsFromTransaction(req, res, next) {
     // Remove duplicates from tokenIds array
     const uniqueTokenIds = [...new Set(tokenIds)];
 
+    const hashedAdminId = req.admin ? hashAdminId(req.admin.id) : null;
+
     return res.json({
       txHash,
+      adminId: hashedAdminId,
       tokenIds: uniqueTokenIds,
     });
   } catch (error) {

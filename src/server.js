@@ -13,10 +13,15 @@ dotenv.config();
 // Import database and models
 const { sequelize, testConnection, syncDatabase } = require('./config/database');
 
+// Import models to ensure they are registered with Sequelize
+require('./models/Seed');
+require('./models/Admin');
+
 // Import routes
 const seedRoutes = require('./routes/seedRoutes');
 const accountRoutes = require('./routes/accountRoutes');
-const TransactionDetailRoutes = require('./routes/transactionDetailsRoutes')
+const TransactionDetailRoutes = require('./routes/transactionDetailsRoutes');
+const adminAuthRoutes = require('./routes/adminAuthRoutes');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -36,6 +41,7 @@ const PORT = Number(process.env.PORT || 3000);
 app.use('/seed', seedRoutes);
 app.use('/create_eth_account', accountRoutes);
 app.use('/get_Transaction_details', TransactionDetailRoutes);
+app.use('/admin/auth', adminAuthRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

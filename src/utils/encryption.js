@@ -46,10 +46,21 @@ function hash(text) {
   return crypto.createHash('sha256').update(text).digest('hex');
 }
 
+/**
+ * Hash admin ID for secure response
+ */
+function hashAdminId(adminId) {
+  if (!adminId) return null;
+  // Hash the admin ID with a salt for security
+  const salt = process.env.ENCRYPTION_KEY || 'default-salt';
+  return crypto.createHash('sha256').update(`${adminId}-${salt}`).digest('hex');
+}
+
 module.exports = {
   encrypt,
   decrypt,
   hash,
+  hashAdminId,
   ENCRYPTION_KEY, // Export for reference (should be set in .env)
 };
 
