@@ -17,6 +17,7 @@ const { sequelize, testConnection, syncDatabase } = require('./config/database')
 const seedRoutes = require('./routes/seedRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const TransactionDetailRoutes = require('./routes/transactionDetailsRoutes')
+const uploadRoutes = require("./routes/ipfsRoutes");
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -36,6 +37,8 @@ const PORT = Number(process.env.PORT || 3000);
 app.use('/seed', seedRoutes);
 app.use('/create_eth_account', accountRoutes);
 app.use('/get_Transaction_details', TransactionDetailRoutes);
+app.use("/upload", uploadRoutes);
+
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
