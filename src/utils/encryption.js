@@ -56,11 +56,41 @@ function hashAdminId(adminId) {
   return crypto.createHash('sha256').update(`${adminId}-${salt}`).digest('hex');
 }
 
+/**
+ * Verify hashed admin ID by checking against all admins in database
+ * Returns the admin if found, null otherwise
+ */
+async function verifyHashedAdminId(hashedAdminId, Admin) {
+  if (!hashedAdminId) return null;
+  
+  try {
+    // Get all active admins
+    const admins = await Admin.findAll({
+      where: { isActive: true },
+      attributes: ['id', 'email'],
+    });
+
+    // Check each admin's hashed ID
+    for (const admin of admins) {
+      const adminHashedId = hashAdminId(admin.id);
+      if (adminHashedId === hashedAdminId) {
+        return admin;
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error verifying hashed admin ID:', error);
+    return null;
+  }
+}
+
 module.exports = {
   encrypt,
   decrypt,
   hash,
   hashAdminId,
+  verifyHashedAdminId,
   ENCRYPTION_KEY, // Export for reference (should be set in .env)
 };
 

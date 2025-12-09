@@ -9,10 +9,6 @@ const pinata = new pinataSDK({
 });
 const { generateCustomTimestamp } = require('../utils/seed');
 
-const MY_APP_KEY = process.env.MY_APP_KEY;
-const MY_APP_ID = process.env.MY_APP_ID;
-
-
 
 /**
  * Uploads the image to ipfs network using pinata
@@ -23,15 +19,23 @@ async function uploadToIPFS(req, res) {
     console.log("BODY:", req.body);
 
     // --- AUTH ---
-    const apiKey = req.headers["authorization"]?.replace("Bearer ", "");
-    const appId = req.headers["x-application-vkn"];
+    const adminId = req.headers['x-application-vkn'];
 
-    if (!apiKey || !appId) {
-      return res.status(400).json({ error: "Missing API Key or App ID" });
+    // Validate admin ID
+    if (!adminId) {
+      return res.status(400).json({
+        error: 'Admin ID is required',
+        message: 'Please provide x-application-vkn in the request header: x-application-vkn: hashed-admin-id',
+      });
     }
 
-    if (apiKey !== MY_APP_KEY || appId !== MY_APP_ID) {
-      return res.status(401).json({ error: "Unauthorized client" });
+    // Verify hashed admin ID exists in database
+    const admin = await verifyHashedAdminId(adminId, Admin);
+    if (!admin) {
+      return res.status(401).json({
+        error: 'Invalid admin ID',
+        message: 'The provided admin ID is invalid or does not exist.',
+      });
     }
 
     // --- INPUT VALIDATION ---
@@ -159,7 +163,7 @@ async function uploadMetadataToIPFS(req, res) {
     const timestamp = generateCustomTimestamp();
 
 
-     return res.status(201).json({
+    return res.status(201).json({
       IpfsHash: gatewayURL,
       PinSize: pinSize,
       Timestamp: timestamp
