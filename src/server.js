@@ -23,12 +23,15 @@ const seedRoutes = require('./routes/seedRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const adminAuthRoutes = require('./routes/adminAuthRoutes');
 const TransactionDetailRoutes = require('./routes/transactionDetailsRoutes')
+const nftRoutes = require('./routes/nftRoutes')
 const uploadRoutes = require("./routes/ipfsRoutes");
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
+BigInt.prototype.toJSON = function () { return this.toString(); };
+
 
 // Middleware
 app.use(helmet());
@@ -41,8 +44,9 @@ const PORT = Number(process.env.PORT || 3000);
 
 // API Routes
 app.use('/seed', seedRoutes);
-app.use('/create_eth_account', accountRoutes);
-app.use('/get_Transaction_details', TransactionDetailRoutes);
+app.use('/nft', nftRoutes);
+app.use('/generateAddress', accountRoutes);
+app.use('/getTransactionDetails', TransactionDetailRoutes);
 app.use('/admin/auth', adminAuthRoutes);
 app.use("/upload", uploadRoutes);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
