@@ -22,6 +22,7 @@ async function uploadToIPFS(req, res) {
     console.log("HEADERS:", req.headers);
     console.log("BODY:", req.body);
 
+
     // --- AUTH ---
     const apiKey = req.headers["authorization"]?.replace("Bearer ", "");
     const appId = req.headers["x-application-vkn"];
