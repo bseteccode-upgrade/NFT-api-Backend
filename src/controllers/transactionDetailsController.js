@@ -23,14 +23,14 @@ async function getTransactionDetails(req, res, next) {
     const { txHash } = req.params;
     const rpcUrl = process.env.ARBITRUM_RPC_URL;
 
-    // Get admin ID from header (x-application-vkn)
-    const adminId = req.headers['x-application-vkn'];
+    // Get admin ID from header (x-api-key)
+    const adminId = req.headers['x-api-key'];
 
     // Validate admin ID
     if (!adminId) {
       return res.status(400).json({
         error: 'Admin ID is required',
-        message: 'Please provide x-application-vkn in the request header: x-application-vkn: hashed-admin-id',
+        message: 'Please provide x-api-key in the request header: x-api-key: hashed-admin-id',
       });
     }
 
@@ -112,14 +112,14 @@ async function getTransactionStatus(req, res, next) {
     const { txHash } = req.params;
     const rpcUrl = process.env.ARBITRUM_RPC_URL;
 
-    // Get admin ID from header (x-application-vkn)
-    const adminId = req.headers['x-application-vkn'];
+    // Get admin ID from header (x-api-key)
+    const adminId = req.headers['x-api-key'];
 
     // Validate admin ID
     if (!adminId) {
       return res.status(400).json({
         error: 'Admin ID is required',
-        message: 'Please provide x-application-vkn in the request header: x-application-vkn: hashed-admin-id',
+        message: 'Please provide x-api-key in the request header: x-api-key: hashed-admin-id',
       });
     }
 
@@ -250,14 +250,14 @@ async function getTokenIdsFromTransaction(req, res, next) {
     const { txHash } = req.params;
     const rpcUrl = process.env.ARBITRUM_RPC_URL;
 
-    // Get admin ID from header (x-application-vkn)
-    const adminId = req.headers['x-application-vkn'];
+    // Get admin ID from header (x-api-key)
+    const adminId = req.headers['x-api-key'];
 
     // Validate admin ID
     if (!adminId) {
       return res.status(400).json({
         error: 'Admin ID is required',
-        message: 'Please provide x-application-vkn in the request header: x-application-vkn: hashed-admin-id',
+        message: 'Please provide x-api-key in the request header: x-api-key: hashed-admin-id',
       });
     }
 

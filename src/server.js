@@ -40,8 +40,8 @@ const PORT = Number(process.env.PORT || 3000);
 
 // API Routes
 app.use('/seed', seedRoutes);
-app.use('/create_eth_account', accountRoutes);
-app.use('/get_Transaction_details', TransactionDetailRoutes);
+app.use('/generateAddress', accountRoutes);
+app.use('/getTransactionDetails', TransactionDetailRoutes);
 app.use('/admin/auth', adminAuthRoutes);
 app.use("/upload", uploadRoutes);
 

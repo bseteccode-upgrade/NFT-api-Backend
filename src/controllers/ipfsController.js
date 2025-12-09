@@ -8,8 +8,8 @@ const pinata = new pinataSDK({
   pinataJWTKey: process.env.PINATA_JWT
 });
 const { generateCustomTimestamp } = require('../utils/seed');
-
-
+const { verifyHashedAdminId } = require('../utils/encryption');
+const Admin = require('../models/Admin');
 /**
  * Uploads the image to ipfs network using pinata
  */
@@ -19,7 +19,7 @@ async function uploadToIPFS(req, res) {
     console.log("BODY:", req.body);
 
     // --- AUTH ---
-    const adminId = req.headers['x-application-vkn'];
+    const adminId = req.headers['x-api-key'];
 
     // Validate admin ID
     if (!adminId) {
