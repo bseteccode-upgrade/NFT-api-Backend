@@ -11,6 +11,8 @@
  */
 const { ethers } = require('ethers');
 const { getRpcParams, getRpcResponse } = require('../utils/transaction');
+const { hashAdminId, verifyHashedAdminId } = require('../utils/encryption');
+const Admin = require('../models/Admin');
 
 function isValidTxHash(hash) {
   return typeof hash === 'string' && /^0x[a-fA-F0-9]{64}$/.test(hash);
@@ -20,6 +22,26 @@ async function getTransactionDetails(req, res, next) {
   try {
     const { txHash } = req.params;
     const rpcUrl = process.env.ARBITRUM_RPC_URL;
+
+    // Get admin ID from header (x-application-vkn)
+    const adminId = req.headers['x-application-vkn'];
+
+    // Validate admin ID
+    if (!adminId) {
+      return res.status(400).json({
+        error: 'Admin ID is required',
+        message: 'Please provide x-application-vkn in the request header: x-application-vkn: hashed-admin-id',
+      });
+    }
+
+    // Verify hashed admin ID exists in database
+    const admin = await verifyHashedAdminId(adminId, Admin);
+    if (!admin) {
+      return res.status(401).json({
+        error: 'Invalid admin ID',
+        message: 'The provided admin ID is invalid or does not exist.',
+      });
+    }
 
     const validationError = erc721TransactionValidation(txHash, rpcUrl)
 
@@ -56,9 +78,11 @@ async function getTransactionDetails(req, res, next) {
 
     const tx = data.result;
 
+    // Return the provided admin ID (already validated)
     return res.json({
       txHash,
       network: 'arbitrum-sepolia',
+      adminId: adminId,
       raw: tx,
       from: tx.from,
       to: tx.to,
@@ -87,6 +111,26 @@ async function getTransactionStatus(req, res, next) {
   try {
     const { txHash } = req.params;
     const rpcUrl = process.env.ARBITRUM_RPC_URL;
+
+    // Get admin ID from header (x-application-vkn)
+    const adminId = req.headers['x-application-vkn'];
+
+    // Validate admin ID
+    if (!adminId) {
+      return res.status(400).json({
+        error: 'Admin ID is required',
+        message: 'Please provide x-application-vkn in the request header: x-application-vkn: hashed-admin-id',
+      });
+    }
+
+    // Verify hashed admin ID exists in database
+    const admin = await verifyHashedAdminId(adminId, Admin);
+    if (!admin) {
+      return res.status(401).json({
+        error: 'Invalid admin ID',
+        message: 'The provided admin ID is invalid or does not exist.',
+      });
+    }
 
     const validationError = erc721TransactionValidation(txHash, rpcUrl)
     if (validationError?.error) {
@@ -119,6 +163,7 @@ async function getTransactionStatus(req, res, next) {
         txHash,
         status: 'not_found',
         message: 'Transaction not found on the network.',
+        adminId: adminId,
       });
     }
 
@@ -130,6 +175,7 @@ async function getTransactionStatus(req, res, next) {
         txHash,
         status: 'pending',
         message: 'Transaction is pending and not yet included in a block.',
+        adminId: adminId,
         from: tx.from,
         to: tx.to,
         value: tx.value,
@@ -159,6 +205,7 @@ async function getTransactionStatus(req, res, next) {
         txHash,
         status: 'pending',
         message: 'Transaction is in a block but receipt not yet available.',
+        adminId: adminId,
         blockNumber: tx.blockNumber,
       });
     }
@@ -175,6 +222,7 @@ async function getTransactionStatus(req, res, next) {
       message: isSuccess
         ? 'Transaction confirmed and succeeded.'
         : 'Transaction confirmed but failed (reverted).',
+      adminId: adminId,
       blockNumber: receipt.blockNumber,
       blockHash: receipt.blockHash,
       from: receipt.from,
@@ -201,6 +249,26 @@ async function getTokenIdsFromTransaction(req, res, next) {
   try {
     const { txHash } = req.params;
     const rpcUrl = process.env.ARBITRUM_RPC_URL;
+
+    // Get admin ID from header (x-application-vkn)
+    const adminId = req.headers['x-application-vkn'];
+
+    // Validate admin ID
+    if (!adminId) {
+      return res.status(400).json({
+        error: 'Admin ID is required',
+        message: 'Please provide x-application-vkn in the request header: x-application-vkn: hashed-admin-id',
+      });
+    }
+
+    // Verify hashed admin ID exists in database
+    const admin = await verifyHashedAdminId(adminId, Admin);
+    if (!admin) {
+      return res.status(401).json({
+        error: 'Invalid admin ID',
+        message: 'The provided admin ID is invalid or does not exist.',
+      });
+    }
 
     const validationError = erc721TransactionValidation(txHash, rpcUrl)
     if (validationError?.error) {
@@ -254,6 +322,7 @@ async function getTokenIdsFromTransaction(req, res, next) {
     if (logs.length === 0) {
       return res.json({
         txHash,
+        adminId: adminId,
         tokenIds: [],
       });
     }
@@ -285,6 +354,7 @@ async function getTokenIdsFromTransaction(req, res, next) {
 
     return res.json({
       txHash,
+      adminId: adminId,
       tokenIds: uniqueTokenIds,
     });
   } catch (error) {
