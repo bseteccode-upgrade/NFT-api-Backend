@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const { swaggerUi, swaggerSpec } = require("../swagger");
 
 // Load environment variables
 dotenv.config();
@@ -48,6 +49,7 @@ app.use('/generateAddress', accountRoutes);
 app.use('/getTransactionDetails', TransactionDetailRoutes);
 app.use('/admin/auth', adminAuthRoutes);
 app.use("/upload", uploadRoutes);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 // Error handling middleware (must be last)

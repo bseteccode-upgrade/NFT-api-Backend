@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: NFT API
+  version: 1.0.0
+  description: API documentation for NFT
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+paths:
+  /upload/ipfs-image:
+    post:
+      summary: Upload a image  to IPFS
+      tags:
+        - IPFS
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: header
+          name: x-application-vkn
+          required: true
+          description: Application ID
+          schema:
+            type: string
+            example: VOTTUN123
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - filename
+                - file
+              properties:
+                filename:
+                  type: string
+                  example: "nature.jpg"
+                file:
+                  type: string
+                  format: binary
+
+      responses:
+        "201":
+          description: File uploaded successfully
+        "400":
+          description: Missing filename or file
+
+        "401":
+          description: Unauthorized client
+
+        "503":
+          description: Upload failed  

@@ -18,6 +18,7 @@ async function uploadToIPFS(req, res) {
     console.log("HEADERS:", req.headers);
     console.log("BODY:", req.body);
 
+
     // --- AUTH ---
     const adminId = req.headers['x-api-key'];
     // Validate admin ID
