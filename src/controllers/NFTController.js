@@ -105,8 +105,61 @@ async function mintnfts(req, res) {
     }
 }
 
+async function settokenuris(req, res) {
+    try {
+        let { contractAddress, tokenIds, ipfsUris, network } = req.body;
+        console.log(req.body, '------------body');
+        if (!contractAddress || tokenIds.length <= 0 || ipfsUris.length <= 0) {
+            return res.status(400).json({ status: false, error: "Contract Address , TokenIds , tokenuris are required" });
+        }
+        if (tokenIds.length !== ipfsUris.length) {
+            return res.status(400).json({ status: false, error: "Token Ids and the Token uris doesn't match" });
+        }
+        if (!network) {
+            network = process.env.ARBITRUM_SEPOLIA_CHAINID
+        }
+
+        const nftcontract = await getcontractconnection(network, contractAddress)
+        const tx = await nftcontract.setTokenURI(tokenIds, ipfsUris)
+        console.log("Tx sent:", tx.hash);
+        const receipt = await tx.wait();
+        console.log(receipt, '---------------------------Logs of the reciept')
+        console.log(tx, '---------------------------tx')
+        console.log("Tx confirmed:", receipt.hash);
+        const event = receipt.logs
+            .map(log => {
+                try { return nftcontract.interface.parseLog(log); }
+                catch { return null }
+            })
+            .find(e => e && e.name === "ReplacedTokenUris");
+        if (!event) {
+            console.error(" ReplacedTokenUris event NOT found!");
+            return res.status(500).json({
+                status: false,
+                message: "Replacing TokenUris failed — event not emitted",
+                txhash: tx.hash,
+                logs: receipt.logs.map(l => l.topics)
+            });
+        }
+        console.log(event?.args, '------------___Argument')
+        const tokenuris = event?.args.tokenuris
+        const tokenIDs = event?.args.tokenIds
+        return res.json({
+            status: true,
+            message: "Token Uris Replaced successfully",
+            tokenuris,
+            tokenIDs,
+            txhash: tx.hash
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: err.message });
+    }
+}
+
 module.exports = {
     deploycontract,
-    mintnfts
+    mintnfts,
+    settokenuris
 };
 
