@@ -140,3 +140,107 @@ paths:
       "503":
         description: Upload failed
      
+
+/nft/deploy:
+    post:
+      summary:  Deploy a new nft contract 
+      tags:
+        - NFT
+      security:
+        - bearerAuth: []  
+      parameters:
+      - in: header
+        name: x-api-key
+        required: true
+        description: Admin API Key
+        schema:
+          type: string
+          example: "ADMIN12345"  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - symbol
+              properties:
+                name:
+                  type: string
+                  example: "MyToken"
+                symbol:
+                  type: string
+                  example: MTK
+                network:
+                  type: string
+                  description: Blockchain network chain id (optional)
+                  example: "421614"  
+
+      responses:
+        "200":
+          description: Clone created successfully
+        "400":
+          description: Missing name or symbol
+        "401":
+          description: Unauthorized client
+        "500":
+          description: Server error during contract deployment
+
+
+/nft/mint:
+    post:
+      summary:  Mint a new nft 
+      tags:
+        - NFT
+      security:
+        - bearerAuth: []  
+      parameters:
+      - in: header
+        name: x-api-key
+        required: true
+        description: Admin API Key
+        schema:
+          type: string
+          example: "ADMIN12345"  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contractAddress
+                - recipientAddress
+                - ipfsUri
+              properties:
+                Contract Address:
+                  type: string
+                  example: "0xA12...45678"
+                recipient Address:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "0x1111111111111111111111111111111111111111"
+                    - "0x2222222222222222222222222222222222222222"
+                ipfsUri:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "ipfs://QmHash1"
+                    - "ipfs://QmHash2"
+                network:
+                  type: string
+                  description: Optional blockchain network chain ID
+                  example: "421614"  
+      responses:
+        "200":
+          description: NFTs minted successfully
+        "400":
+          description: Missing or invalid required fields
+        "401":
+          description: Unauthorized client
+        "500":
+          description: Server error during minting
