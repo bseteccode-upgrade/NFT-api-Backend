@@ -15,11 +15,9 @@ dotenv.config();
 const { sequelize, testConnection, syncDatabase } = require('./config/database');
 
 // Import models to ensure they are registered with Sequelize
-require('./models/Seed');
 require('./models/Admin');
 
 // Import routes
-const seedRoutes = require('./routes/seedRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const adminAuthRoutes = require('./routes/adminAuthRoutes');
 const TransactionDetailRoutes = require('./routes/transactionDetailsRoutes')
@@ -43,7 +41,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const PORT = Number(process.env.PORT || 3000);
 
 // API Routes
-app.use('/seed', seedRoutes);
 app.use('/nft', nftRoutes);
 app.use('/generateAddress', accountRoutes);
 app.use('/getTransactionDetails', TransactionDetailRoutes);

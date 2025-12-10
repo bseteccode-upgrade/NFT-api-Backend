@@ -1,10 +1,7 @@
 'use strict';
 
-const express = require("express");
-const Seed = require('../models/Seed');
 const { getcontractconnection } = require("../utils/helper")
 const Nft = require("../abi/NFTBatch.json").abi;
-const { ethers } = require("ethers");
 const Admin = require('../models/Admin');
 const { adminIdValidation } = require('../utils/transaction')
 

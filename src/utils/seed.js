@@ -1,14 +1,5 @@
 'use strict';
 
-const bip39 = require('bip39');
-
-function generateMnemonic(strengthBits = 128) {
-  return bip39.generateMnemonic(strengthBits);
-}
-
-function validateMnemonic(mnemonic) {
-  return bip39.validateMnemonic(mnemonic);
-}
 function generateCustomTimestamp() {
   const now = new Date();
 
@@ -30,8 +21,6 @@ function generateCustomTimestamp() {
 
 
 module.exports = {
-  generateMnemonic,
-  validateMnemonic,
   generateCustomTimestamp
 };
 
