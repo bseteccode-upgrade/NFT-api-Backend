@@ -68,15 +68,15 @@ async function uploadToIPFS(req, res) {
  */
 async function uploadMetadataToIPFS(req, res) {
   try {
-    const appKey = req.headers["authorization"]?.replace("Bearer ", "");
-    const appId = req.headers["x-application-vkn"];
+    const adminId = req.headers['x-api-key'];
+    // Validate admin ID
+    const getAdminvalidation = await adminIdValidation(adminId, Admin)
 
-    if (!appKey || !appId) {
-      return res.status(400).json({ error: "Missing appKey or appId in headers" });
-    }
-
-    if (appKey !== process.env.MY_APP_KEY || appId !== process.env.MY_APP_ID) {
-      return res.status(401).json({ error: "Unauthorized client" });
+    if (getAdminvalidation.error !== "") {
+      return res.status(401).json({
+        error: getAdminvalidation.error,
+        message: getAdminvalidation.message
+      })
     }
 
     // Validate metadata
