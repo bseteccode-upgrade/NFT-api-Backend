@@ -7,7 +7,7 @@ const {
 } = require('../controllers/accountController');
 
 // Create next account (auto-increment index)
-router.post('/', createAccount);
+router.get('/', createAccount);
 
 module.exports = router;
 

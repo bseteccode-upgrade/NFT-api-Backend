@@ -10,8 +10,7 @@
  *   ARBITRUM_RPC_URL - required, your Arbitrum Sepolia RPC URL
  */
 const { ethers } = require('ethers');
-const { getRpcParams, getRpcResponse } = require('../utils/transaction');
-const { hashAdminId, verifyHashedAdminId } = require('../utils/encryption');
+const { getRpcParams, getRpcResponse, adminIdValidation } = require('../utils/transaction');
 const Admin = require('../models/Admin');
 
 function isValidTxHash(hash) {
@@ -25,22 +24,13 @@ async function getTransactionDetails(req, res, next) {
 
     // Get admin ID from header (x-api-key)
     const adminId = req.headers['x-api-key'];
+    const getAdminvalidation = await adminIdValidation(adminId, Admin)
 
-    // Validate admin ID
-    if (!adminId) {
-      return res.status(400).json({
-        error: 'Admin ID is required',
-        message: 'Please provide x-api-key in the request header: x-api-key: hashed-admin-id',
-      });
-    }
-
-    // Verify hashed admin ID exists in database
-    const admin = await verifyHashedAdminId(adminId, Admin);
-    if (!admin) {
+    if (getAdminvalidation.error !== "") {
       return res.status(401).json({
-        error: 'Invalid admin ID',
-        message: 'The provided admin ID is invalid or does not exist.',
-      });
+        error: getAdminvalidation.error,
+        message: getAdminvalidation.message
+      })
     }
 
     const validationError = erc721TransactionValidation(txHash, rpcUrl)
@@ -114,22 +104,13 @@ async function getTransactionStatus(req, res, next) {
 
     // Get admin ID from header (x-api-key)
     const adminId = req.headers['x-api-key'];
+    const getAdminvalidation = await adminIdValidation(adminId, Admin)
 
-    // Validate admin ID
-    if (!adminId) {
-      return res.status(400).json({
-        error: 'Admin ID is required',
-        message: 'Please provide x-api-key in the request header: x-api-key: hashed-admin-id',
-      });
-    }
-
-    // Verify hashed admin ID exists in database
-    const admin = await verifyHashedAdminId(adminId, Admin);
-    if (!admin) {
+    if (getAdminvalidation.error !== "") {
       return res.status(401).json({
-        error: 'Invalid admin ID',
-        message: 'The provided admin ID is invalid or does not exist.',
-      });
+        error: getAdminvalidation.error,
+        message: getAdminvalidation.message
+      })
     }
 
     const validationError = erc721TransactionValidation(txHash, rpcUrl)
@@ -252,22 +233,13 @@ async function getTokenIdsFromTransaction(req, res, next) {
 
     // Get admin ID from header (x-api-key)
     const adminId = req.headers['x-api-key'];
+    const getAdminvalidation = await adminIdValidation(adminId, Admin)
 
-    // Validate admin ID
-    if (!adminId) {
-      return res.status(400).json({
-        error: 'Admin ID is required',
-        message: 'Please provide x-api-key in the request header: x-api-key: hashed-admin-id',
-      });
-    }
-
-    // Verify hashed admin ID exists in database
-    const admin = await verifyHashedAdminId(adminId, Admin);
-    if (!admin) {
+    if (getAdminvalidation.error !== "") {
       return res.status(401).json({
-        error: 'Invalid admin ID',
-        message: 'The provided admin ID is invalid or does not exist.',
-      });
+        error: getAdminvalidation.error,
+        message: getAdminvalidation.message
+      })
     }
 
     const validationError = erc721TransactionValidation(txHash, rpcUrl)

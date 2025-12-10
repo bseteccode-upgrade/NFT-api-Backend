@@ -18,7 +18,7 @@ async function createAccount(req, res, next) {
 
     return res.json({
       address: myAddress,
-      privateKey: myPrivate,
+      private: myPrivate,
     });
   } catch (error) {
     next(error);
