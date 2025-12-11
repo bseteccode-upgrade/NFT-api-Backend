@@ -184,11 +184,40 @@ async function settokenuris(req, res) {
         return res.status(500).json({ error: err.message });
     }
 }
+//tokenURI
+async function gettokenuri(req, res) {
+    try {
+        const { tokenId, network, contractAddress } = req.body;
+        const adminId = req.headers['x-api-key'];
+        const getAdminvalidation = await adminIdValidation(adminId, Admin)
+        console.log(adminId, getAdminvalidation, '-------------------------AdminID')
+        if (getAdminvalidation.error !== "") {
+            return res.status(401).json({
+                error: getAdminvalidation.error,
+                message: getAdminvalidation.message
+            })
+        }
+        if (!tokenId || !contractAddress) {
+            return res.status(400).json({ status: false, error: "TokenId & contractAddress is required" });
+        }
+        const nftcontract = await getcontractconnection(network, contractAddress)
+        const uri = await nftcontract.tokenURI(tokenId)
+        return res.json({
+            status: true,
+            message: "Token Uri Fetched successfully",
+            Tokenuri: uri,
+        });
 
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: err.message });
+    }
+}
 
 module.exports = {
     deploycontract,
     mintnfts,
-    settokenuris
+    settokenuris,
+    gettokenuri
 };
 
