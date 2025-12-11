@@ -7,7 +7,7 @@ info:
     name: API Support
 
 servers:
-  - url: http://localhost:3001
+  - url: http://localhost:3002
     description: Development server
 
 components:
@@ -464,6 +464,7 @@ paths:
         - IPFS
       security:
         - bearerAuth: []
+        - apiIdAuth: []
       # parameters:
       #   - in: header
       #     name: x-api-key
@@ -505,7 +506,7 @@ paths:
         - IPFS
       security:
         - bearerAuth: []
-
+        - apiIdAuth: []
       requestBody:
         required: true
         content:
@@ -574,6 +575,7 @@ paths:
         - NFT
       security:
         - bearerAuth: []
+        - apiIdAuth: []
       # parameters:
       #   - in: header
       #     name: x-api-key
@@ -620,6 +622,7 @@ paths:
         - NFT
       security:
         - bearerAuth: []
+        - apiIdAuth: []
       # parameters:
       #   - in: header
       #     name: x-api-key
@@ -669,3 +672,54 @@ paths:
           description: Unauthorized client
         "500":
           description: Server error during minting
+
+  /nft/settoken:
+    post:
+      summary: Set a new token
+      tags:
+        - NFT
+      security:
+        - bearerAuth: []
+        - apiIdAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contractAddress
+                - tokenIds
+                - ipfsUris
+                - network
+              properties:
+                Contract Address:
+                  type: string
+                  example: "0xA12...45678"
+                tokenIds:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "1"
+                    - "2"  
+                ipfsUris:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "ipfs://QmHash1"
+                    - "ipfs://QmHash2"  
+                network:
+                  type: string
+                  description: Optional blockchain network chain ID
+                  example: "421614"
+      responses:
+        "200":
+          description: Token URIs replaced successfully
+        "400":
+          description: Missing or invalid required fields
+        "401":
+          description: Unauthorized client
+        "500":
+          description: Server error while replacing URIs
