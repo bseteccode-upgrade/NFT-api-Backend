@@ -172,7 +172,7 @@ paths:
                   format: email
                   example: admin@example.com
       responses:
-        '201':
+        "201":
           description: Admin created successfully
           content:
             application/json:
@@ -184,24 +184,24 @@ paths:
                   message:
                     type: string
                   admin:
-                    $ref: '#/components/schemas/Admin'
+                    $ref: "#/components/schemas/Admin"
                   token:
                     type: string
                     description: JWT token (never expires)
                   expiresIn:
                     type: null
-        '400':
+        "400":
           description: Validation error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '409':
+                $ref: "#/components/schemas/Error"
+        "409":
           description: Admin already exists
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /admin/auth/user:
     get:
@@ -219,7 +219,7 @@ paths:
           description: Admin email address
           example: admin@example.com
       responses:
-        '200':
+        "200":
           description: Admin info retrieved successfully
           content:
             application/json:
@@ -229,24 +229,24 @@ paths:
                   success:
                     type: boolean
                   admin:
-                    $ref: '#/components/schemas/Admin'
+                    $ref: "#/components/schemas/Admin"
                   token:
                     type: string
                     description: JWT token (never expires)
                   expiresIn:
                     type: null
-        '400':
+        "400":
           description: Email is required or invalid format
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '404':
+                $ref: "#/components/schemas/Error"
+        "404":
           description: Admin not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /admin/auth/verify:
     get:
@@ -257,7 +257,7 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Token is valid
           content:
             application/json:
@@ -277,12 +277,12 @@ paths:
                         type: integer
                       email:
                         type: string
-        '401':
+        "401":
           description: Unauthorized - Invalid or missing token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /getTransactionDetails/{txHash}:
     get:
@@ -299,16 +299,16 @@ paths:
           required: true
           schema:
             type: string
-            pattern: '^0x[a-fA-F0-9]{64}$'
+            pattern: "^0x[a-fA-F0-9]{64}$"
           description: Transaction hash (0x-prefixed 64-character hex string)
           example: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
       responses:
-        '200':
+        "200":
           description: Transaction details retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransactionDetails'
+                $ref: "#/components/schemas/TransactionDetails"
               example:
                 txHash: "0x123..."
                 network: "arbitrum-sepolia"
@@ -317,30 +317,30 @@ paths:
                 to: "0x1234567890123456789012345678901234567890"
                 value: "0x0"
                 blockNumber: "0x12345"
-        '400':
+        "400":
           description: Invalid transaction hash or missing admin ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '401':
+                $ref: "#/components/schemas/Error"
+        "401":
           description: Unauthorized - Invalid token or admin ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '404':
+                $ref: "#/components/schemas/Error"
+        "404":
           description: Transaction not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '502':
+                $ref: "#/components/schemas/Error"
+        "502":
           description: RPC node error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /getTransactionDetails/status/{txHash}:
     get:
@@ -357,34 +357,34 @@ paths:
           required: true
           schema:
             type: string
-            pattern: '^0x[a-fA-F0-9]{64}$'
+            pattern: "^0x[a-fA-F0-9]{64}$"
           description: Transaction hash (0x-prefixed 64-character hex string)
           example: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
       responses:
-        '200':
+        "200":
           description: Transaction status retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransactionStatus'
-        '400':
+                $ref: "#/components/schemas/TransactionStatus"
+        "400":
           description: Invalid transaction hash or missing admin ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '401':
+                $ref: "#/components/schemas/Error"
+        "401":
           description: Unauthorized - Invalid token or admin ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '502':
+                $ref: "#/components/schemas/Error"
+        "502":
           description: RPC node error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /getTransactionDetails/token-ids/{txHash}:
     get:
@@ -401,38 +401,38 @@ paths:
           required: true
           schema:
             type: string
-            pattern: '^0x[a-fA-F0-9]{64}$'
+            pattern: "^0x[a-fA-F0-9]{64}$"
           description: Transaction hash (0x-prefixed 64-character hex string)
           example: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
       responses:
-        '200':
+        "200":
           description: Token IDs retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenIds'
+                $ref: "#/components/schemas/TokenIds"
               example:
                 txHash: "0x123..."
                 adminId: "abc123..."
                 tokenIds: ["1", "2", "3"]
-        '400':
+        "400":
           description: Invalid transaction hash, missing admin ID, or transaction failed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '401':
+                $ref: "#/components/schemas/Error"
+        "401":
           description: Unauthorized - Invalid token or admin ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '404':
+                $ref: "#/components/schemas/Error"
+        "404":
           description: Transaction receipt not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /generateAddress:
     get:
@@ -441,21 +441,21 @@ paths:
       tags:
         - Address Generation
       responses:
-        '200':
+        "200":
           description: Address generated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Address'
+                $ref: "#/components/schemas/Address"
               example:
                 address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
                 private: "0x1234567890abcdef..."
-        '500':
+        "500":
           description: Server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /upload/ipfs-image:
     post:
@@ -489,13 +489,13 @@ paths:
                   type: string
                   format: binary
       responses:
-        '201':
+        "201":
           description: File uploaded successfully
-        '400':
+        "400":
           description: Missing filename or file
-        '401':
+        "401":
           description: Unauthorized client
-        '503':
+        "503":
           description: Upload failed
 
   /upload/ipfs-metadata:
@@ -505,7 +505,7 @@ paths:
         - IPFS
       security:
         - bearerAuth: []
-       
+
       requestBody:
         required: true
         content:
@@ -558,11 +558,114 @@ paths:
                   example:
                     extraField: "Some value"
       responses:
-        '201':
+        "201":
           description: File uploaded successfully
-        '400':
+        "400":
           description: Missing filename or file
-        '401':
+        "401":
           description: Unauthorized client
-        '503':
+        "503":
           description: Upload failed
+
+  /nft/deploy:
+    post:
+      summary: Deploy a new nft contract
+      tags:
+        - NFT
+      security:
+        - bearerAuth: []
+      # parameters:
+      #   - in: header
+      #     name: x-api-key
+      #     required: true
+      #     description: Admin API Key
+      #     schema:
+      #       type: string
+      #       example: "ADMIN12345"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - symbol
+              properties:
+                name:
+                  type: string
+                  example: "MyToken"
+                symbol:
+                  type: string
+                  example: MTK
+                network:
+                  type: string
+                  description: Blockchain network chain id (optional)
+                  example: "421614"
+
+      responses:
+        "200":
+          description: Clone created successfully
+        "400":
+          description: Missing name or symbol
+        "401":
+          description: Unauthorized client
+        "500":
+          description: Server error during contract deployment
+
+  /nft/mint:
+    post:
+      summary: Mint a new nft
+      tags:
+        - NFT
+      security:
+        - bearerAuth: []
+      # parameters:
+      #   - in: header
+      #     name: x-api-key
+      #     required: true
+      #     description: Admin API Key
+      #     schema:
+      #       type: string
+      #       example: "ADMIN12345"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contractAddress
+                - recipientAddress
+                - ipfsUri
+              properties:
+                Contract Address:
+                  type: string
+                  example: "0xA12...45678"
+                recipient Address:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "0x1111111111111111111111111111111111111111"
+                    - "0x2222222222222222222222222222222222222222"
+                ipfsUri:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "ipfs://QmHash1"
+                    - "ipfs://QmHash2"
+                network:
+                  type: string
+                  description: Optional blockchain network chain ID
+                  example: "421614"
+      responses:
+        "200":
+          description: NFTs minted successfully
+        "400":
+          description: Missing or invalid required fields
+        "401":
+          description: Unauthorized client
+        "500":
+          description: Server error during minting
