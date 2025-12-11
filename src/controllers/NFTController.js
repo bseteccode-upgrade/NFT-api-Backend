@@ -68,7 +68,7 @@ async function mintnfts(req, res) {
         // Get admin ID from header (x-api-key)
         const adminId = req.headers['x-api-key'];
         const getAdminvalidation = await adminIdValidation(adminId, Admin)
-
+        console.log(adminId, getAdminvalidation, '-------------------------AdminID')
         if (getAdminvalidation.error !== "") {
             return res.status(401).json({
                 error: getAdminvalidation.error,
@@ -128,6 +128,15 @@ async function settokenuris(req, res) {
     try {
         let { contractAddress, tokenIds, ipfsUris, network } = req.body;
         console.log(req.body, '------------body');
+        const adminId = req.headers['x-api-key'];
+        const getAdminvalidation = await adminIdValidation(adminId, Admin)
+        console.log(adminId, getAdminvalidation, '-------------------------AdminID')
+        if (getAdminvalidation.error !== "") {
+            return res.status(401).json({
+                error: getAdminvalidation.error,
+                message: getAdminvalidation.message
+            })
+        }
         if (!contractAddress || tokenIds.length <= 0 || ipfsUris.length <= 0) {
             return res.status(400).json({ status: false, error: "Contract Address , TokenIds , tokenuris are required" });
         }
@@ -175,6 +184,7 @@ async function settokenuris(req, res) {
         return res.status(500).json({ error: err.message });
     }
 }
+
 
 module.exports = {
     deploycontract,
