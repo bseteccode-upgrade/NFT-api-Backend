@@ -1,0 +1,246 @@
+openapi: 3.0.0
+info:
+  title: NFT API
+  version: 1.0.0
+  description: API documentation for NFT
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+paths:
+  /upload/ipfs-image:
+    post:
+      summary: Upload a image  to IPFS
+      tags:
+        - IPFS
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: header
+          name: x-application-vkn
+          required: true
+          description: Application ID
+          schema:
+            type: string
+            example: VOTTUN123
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - filename
+                - file
+              properties:
+                filename:
+                  type: string
+                  example: "nature.jpg"
+                file:
+                  type: string
+                  format: binary
+
+      responses:
+        "201":
+          description: File uploaded successfully
+        "400":
+          description: Missing filename or file
+
+        "401":
+          description: Unauthorized client
+
+        "503":
+          description: Upload failed  
+
+
+
+
+/upload/ipfs-metadata:
+    post:
+      summary: Upload a metadata  to IPFS
+      tags:
+        - IPFS
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: header
+          name: x-application-vkn
+          required: true
+          description: Application ID
+          schema:
+            type: string
+            example: VOTTUN123
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - image
+                - description
+                - attributes
+              properties:
+                name:
+                  type: string
+                  example: "Asset name"
+                image:
+                  type: string
+                  example: "ipfs://imageHash"
+                description:
+                  type: string
+                  example: "This is an NFT"
+                edition:
+                  type: string
+                external_url:
+                  type: string
+                animation_url:
+                  type: string
+                attributes:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - trait_type
+                      - value
+                    properties:
+                      trait_type:
+                        type: string
+                        example: Background
+                      value:
+                        type: string
+                        example: Blue
+                      display_type:
+                        type: string
+                        example: number
+                      max_value:
+                        type: integer
+                        example: 100
+                data:
+                  type: object
+                  example:
+                    extraField: "Some value"
+
+
+      responses:
+       "201":
+         description: File uploaded successfully
+      "400":
+        description: Missing filename or file
+      "401":
+        description: Unauthorized client
+      "503":
+        description: Upload failed
+     
+
+/nft/deploy:
+    post:
+      summary:  Deploy a new nft contract 
+      tags:
+        - NFT
+      security:
+        - bearerAuth: []  
+      parameters:
+      - in: header
+        name: x-api-key
+        required: true
+        description: Admin API Key
+        schema:
+          type: string
+          example: "ADMIN12345"  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - symbol
+              properties:
+                name:
+                  type: string
+                  example: "MyToken"
+                symbol:
+                  type: string
+                  example: MTK
+                network:
+                  type: string
+                  description: Blockchain network chain id (optional)
+                  example: "421614"  
+
+      responses:
+        "200":
+          description: Clone created successfully
+        "400":
+          description: Missing name or symbol
+        "401":
+          description: Unauthorized client
+        "500":
+          description: Server error during contract deployment
+
+
+/nft/mint:
+    post:
+      summary:  Mint a new nft 
+      tags:
+        - NFT
+      security:
+        - bearerAuth: []  
+      parameters:
+      - in: header
+        name: x-api-key
+        required: true
+        description: Admin API Key
+        schema:
+          type: string
+          example: "ADMIN12345"  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contractAddress
+                - recipientAddress
+                - ipfsUri
+              properties:
+                Contract Address:
+                  type: string
+                  example: "0xA12...45678"
+                recipient Address:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "0x1111111111111111111111111111111111111111"
+                    - "0x2222222222222222222222222222222222222222"
+                ipfsUri:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - "ipfs://QmHash1"
+                    - "ipfs://QmHash2"
+                network:
+                  type: string
+                  description: Optional blockchain network chain ID
+                  example: "421614"  
+      responses:
+        "200":
+          description: NFTs minted successfully
+        "400":
+          description: Missing or invalid required fields
+        "401":
+          description: Unauthorized client
+        "500":
+          description: Server error during minting

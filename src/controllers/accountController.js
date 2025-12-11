@@ -1,8 +1,7 @@
 'use strict';
 
-const Seed = require('../models/Seed');
-const { deriveAccountFromMnemonic } = require('../utils/derivation');
-const { getDecryptedMnemonic } = require('./seedController');
+const { default: Wallet } = require('ethereumjs-wallet');
+
 
 /**
  * Create next account with auto-incremented index
@@ -10,36 +9,18 @@ const { getDecryptedMnemonic } = require('./seedController');
  */
 async function createAccount(req, res, next) {
   try {
-    const mnemonic = await getDecryptedMnemonic();
-    if (!mnemonic) {
-      return res.status(400).json({
-        error: 'Master seed not initialized. Initialize via POST /seed/init',
-      });
-    }
-
-    const seed = await Seed.findOne();
-    if (!seed) {
-      return res.status(400).json({
-        error: 'Master seed not initialized. Initialize via POST /seed/init',
-      });
-    }
-
-    const nextIndex = seed.lastIndex + 1;
-    const accountData = deriveAccountFromMnemonic(mnemonic, nextIndex);
-    await seed.update({ lastIndex: nextIndex });
+    var myWallet = Wallet.generate();
+    var myAddress = myWallet.getAddressString();
+    var myPrivate = myWallet.getPrivateKeyString();
 
     return res.json({
-      index: nextIndex,
-      derivationPath: accountData.derivationPath,
-      address: accountData.address,
-      publicKey: accountData.publicKey,
-      privateKey: accountData.privateKey,
+      address: myAddress,
+      private: myPrivate,
     });
   } catch (error) {
     next(error);
   }
 }
-
 
 module.exports = {
   createAccount,

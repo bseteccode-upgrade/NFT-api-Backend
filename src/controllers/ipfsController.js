@@ -8,8 +8,8 @@ const pinata = new pinataSDK({
   pinataJWTKey: process.env.PINATA_JWT
 });
 const { generateCustomTimestamp } = require('../utils/seed');
-
-
+const { adminIdValidation } = require('../utils/transaction')
+const Admin = require('../models/Admin');
 /**
  * Uploads the image to ipfs network using pinata
  */
@@ -18,24 +18,17 @@ async function uploadToIPFS(req, res) {
     console.log("HEADERS:", req.headers);
     console.log("BODY:", req.body);
 
+
     // --- AUTH ---
-    const adminId = req.headers['x-application-vkn'];
-
+    const adminId = req.headers['x-api-key'];
     // Validate admin ID
-    if (!adminId) {
-      return res.status(400).json({
-        error: 'Admin ID is required',
-        message: 'Please provide x-application-vkn in the request header: x-application-vkn: hashed-admin-id',
-      });
-    }
+    const getAdminvalidation = await adminIdValidation(adminId, Admin)
 
-    // Verify hashed admin ID exists in database
-    const admin = await verifyHashedAdminId(adminId, Admin);
-    if (!admin) {
+    if (getAdminvalidation.error !== "") {
       return res.status(401).json({
-        error: 'Invalid admin ID',
-        message: 'The provided admin ID is invalid or does not exist.',
-      });
+        error: getAdminvalidation.error,
+        message: getAdminvalidation.message
+      })
     }
 
     // --- INPUT VALIDATION ---
@@ -75,15 +68,15 @@ async function uploadToIPFS(req, res) {
  */
 async function uploadMetadataToIPFS(req, res) {
   try {
-    const appKey = req.headers["authorization"]?.replace("Bearer ", "");
-    const appId = req.headers["x-application-vkn"];
+    const adminId = req.headers['x-api-key'];
+    // Validate admin ID
+    const getAdminvalidation = await adminIdValidation(adminId, Admin)
 
-    if (!appKey || !appId) {
-      return res.status(400).json({ error: "Missing appKey or appId in headers" });
-    }
-
-    if (appKey !== process.env.MY_APP_KEY || appId !== process.env.MY_APP_ID) {
-      return res.status(401).json({ error: "Unauthorized client" });
+    if (getAdminvalidation.error !== "") {
+      return res.status(401).json({
+        error: getAdminvalidation.error,
+        message: getAdminvalidation.message
+      })
     }
 
     // Validate metadata

@@ -1,14 +1,23 @@
 'use strict';
 
-const express = require("express");
-const Seed = require('../models/Seed');
 const { getcontractconnection } = require("../utils/helper")
 const Nft = require("../abi/NFTBatch.json").abi;
-const { ethers } = require("ethers");
+const Admin = require('../models/Admin');
+const { adminIdValidation } = require('../utils/transaction')
 
 async function deploycontract(req, res, next) {
     try {
         let { name, symbol, network } = req.body;
+        // Get admin ID from header (x-api-key)
+        const adminId = req.headers['x-api-key'];
+        const getAdminvalidation = await adminIdValidation(adminId, Admin)
+
+        if (getAdminvalidation.error !== "") {
+            return res.status(401).json({
+                error: getAdminvalidation.error,
+                message: getAdminvalidation.message
+            })
+        }
         if (!name || !symbol) {
             return res.status(400).json({ error: "name & symbol are required" });
         }
@@ -56,6 +65,16 @@ async function mintnfts(req, res) {
     try {
         let { contractAddress, recipientAddress, ipfsUri, network } = req.body;
         console.log(req.body, '------------body');
+        // Get admin ID from header (x-api-key)
+        const adminId = req.headers['x-api-key'];
+        const getAdminvalidation = await adminIdValidation(adminId, Admin)
+
+        if (getAdminvalidation.error !== "") {
+            return res.status(401).json({
+                error: getAdminvalidation.error,
+                message: getAdminvalidation.message
+            })
+        }
         if (!contractAddress || recipientAddress.length <= 0 || ipfsUri.length <= 0) {
             return res.status(400).json({ status: false, error: "Contract Address , recipient Address , tokenuris are required" });
         }

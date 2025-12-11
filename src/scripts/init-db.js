@@ -8,7 +8,6 @@
 const { sequelize, testConnection, syncDatabase } = require('../config/database');
 
 // Import models to ensure they are registered with Sequelize
-require('../models/Seed');
 require('../models/Admin');
 
 async function initializeDatabase() {
@@ -32,7 +31,6 @@ async function initializeDatabase() {
     
     console.log('✅ Database initialized successfully!');
     console.log('📋 Tables created:');
-    console.log('   - seeds (for encrypted mnemonics and index tracking)');
     console.log('   - admin_users (for admin authentication)');
     
     await sequelize.close();

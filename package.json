@@ -23,6 +23,7 @@
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
     "dotenv": "^17.2.3",
+    "ethereumjs-wallet": "^1.0.2",
     "ethers": "^6.16.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
@@ -36,5 +37,9 @@
     "nodemon": "^3.1.11",
     "pg": "^8.16.3",
     "sequelize": "^6.37.7"
+  },
+  "devDependencies": {
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   }
 }
