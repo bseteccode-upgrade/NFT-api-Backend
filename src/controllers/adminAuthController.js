@@ -83,12 +83,16 @@ async function getJWTToken(admin) {
  */
 async function addAdmin(req, res, next) {
   try {
+    console.log('addAdmin called - Request body:', JSON.stringify(req.body));
+    console.log('Request headers:', JSON.stringify(req.headers));
     const { email } = req.body;
-
+    
     // Validation
     if (!email) {
+      console.log('Email validation failed - email is missing');
       return res.status(400).json({
         error: 'Email is required',
+        message: 'Please provide an email address in the request body.',
       });
     }
 

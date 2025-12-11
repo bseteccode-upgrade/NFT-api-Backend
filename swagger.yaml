@@ -1,33 +1,477 @@
 openapi: 3.0.0
 info:
-  title: NFT API
+  title: NFT API Backend
   version: 1.0.0
-  description: API documentation for NFT
+  description: API documentation for NFT Backend - Admin Authentication, Transaction Details, and Address Generation
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
 
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication
+    apiIdAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Hashed admin ID for validation
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        message:
+          type: string
+          description: Detailed error message
+
+    Admin:
+      type: object
+      properties:
+        hashedId:
+          type: string
+          description: Hashed admin ID
+        email:
+          type: string
+          format: email
+          description: Admin email address
+        isActive:
+          type: boolean
+          description: Whether the admin account is active
+        isSuperAdmin:
+          type: boolean
+          description: Whether this is the super admin (first admin)
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    TransactionDetails:
+      type: object
+      properties:
+        txHash:
+          type: string
+          description: Transaction hash
+        network:
+          type: string
+          description: Network name
+        adminId:
+          type: string
+          description: Hashed admin ID
+        from:
+          type: string
+          description: Sender address
+        to:
+          type: string
+          description: Receiver address
+        value:
+          type: string
+          description: Transaction value in wei
+        blockNumber:
+          type: string
+          description: Block number
+        gas:
+          type: string
+          description: Gas limit
+        gasPrice:
+          type: string
+          description: Gas price
+        nonce:
+          type: string
+          description: Transaction nonce
+
+    TransactionStatus:
+      type: object
+      properties:
+        txHash:
+          type: string
+          description: Transaction hash
+        status:
+          type: string
+          enum: [pending, confirmed, failed, not_found]
+          description: Transaction status
+        message:
+          type: string
+          description: Status message
+        adminId:
+          type: string
+          description: Hashed admin ID
+        blockNumber:
+          type: string
+          description: Block number
+        blockHash:
+          type: string
+          description: Block hash
+        from:
+          type: string
+          description: Sender address
+        to:
+          type: string
+          description: Receiver address
+        gasUsed:
+          type: string
+          description: Gas used
+        cumulativeGasUsed:
+          type: string
+          description: Cumulative gas used
+
+    TokenIds:
+      type: object
+      properties:
+        txHash:
+          type: string
+          description: Transaction hash
+        adminId:
+          type: string
+          description: Hashed admin ID
+        tokenIds:
+          type: array
+          items:
+            type: string
+          description: Array of token IDs
+
+    Address:
+      type: object
+      properties:
+        address:
+          type: string
+          description: Ethereum address
+        private:
+          type: string
+          description: Private key
 
 paths:
+  /admin/auth/add:
+    post:
+      summary: Add a new admin
+      description: Creates a new admin with email only. First admin becomes super admin and receives a new JWT token. Subsequent admins use ADMIN_JWT_TOKEN from environment.
+      tags:
+        - Admin Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: admin@example.com
+      responses:
+        '201':
+          description: Admin created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  admin:
+                    $ref: '#/components/schemas/Admin'
+                  token:
+                    type: string
+                    description: JWT token (never expires)
+                  expiresIn:
+                    type: null
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Admin already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/auth/user:
+    get:
+      summary: Get admin user info and JWT token
+      description: Retrieves admin information by email and returns JWT token. No authentication required.
+      tags:
+        - Admin Authentication
+      parameters:
+        - in: query
+          name: email
+          required: true
+          schema:
+            type: string
+            format: email
+          description: Admin email address
+          example: admin@example.com
+      responses:
+        '200':
+          description: Admin info retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  admin:
+                    $ref: '#/components/schemas/Admin'
+                  token:
+                    type: string
+                    description: JWT token (never expires)
+                  expiresIn:
+                    type: null
+        '400':
+          description: Email is required or invalid format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Admin not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/auth/verify:
+    get:
+      summary: Verify JWT token validity
+      description: Verifies if the provided JWT token is valid. Requires authentication.
+      tags:
+        - Admin Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  admin:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      adminId:
+                        type: integer
+                      email:
+                        type: string
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /getTransactionDetails/{txHash}:
+    get:
+      summary: Get full transaction details
+      description: Get complete details of a transaction from the blockchain. Requires JWT token and admin ID in header.
+      tags:
+        - Transaction Details
+      security:
+        - bearerAuth: []
+        - apiIdAuth: []
+      parameters:
+        - in: path
+          name: txHash
+          required: true
+          schema:
+            type: string
+            pattern: '^0x[a-fA-F0-9]{64}$'
+          description: Transaction hash (0x-prefixed 64-character hex string)
+          example: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+      responses:
+        '200':
+          description: Transaction details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionDetails'
+              example:
+                txHash: "0x123..."
+                network: "arbitrum-sepolia"
+                adminId: "abc123..."
+                from: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+                to: "0x1234567890123456789012345678901234567890"
+                value: "0x0"
+                blockNumber: "0x12345"
+        '400':
+          description: Invalid transaction hash or missing admin ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid token or admin ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: RPC node error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /getTransactionDetails/status/{txHash}:
+    get:
+      summary: Get transaction status
+      description: Get the status of a transaction (pending, confirmed, failed, or not_found). Requires JWT token and admin ID in header.
+      tags:
+        - Transaction Details
+      security:
+        - bearerAuth: []
+        - apiIdAuth: []
+      parameters:
+        - in: path
+          name: txHash
+          required: true
+          schema:
+            type: string
+            pattern: '^0x[a-fA-F0-9]{64}$'
+          description: Transaction hash (0x-prefixed 64-character hex string)
+          example: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+      responses:
+        '200':
+          description: Transaction status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionStatus'
+        '400':
+          description: Invalid transaction hash or missing admin ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid token or admin ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '502':
+          description: RPC node error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /getTransactionDetails/token-ids/{txHash}:
+    get:
+      summary: Get token IDs from transaction
+      description: Extracts ERC-721 token IDs from Transfer events in a transaction. Requires JWT token and admin ID in header.
+      tags:
+        - Transaction Details
+      security:
+        - bearerAuth: []
+        - apiIdAuth: []
+      parameters:
+        - in: path
+          name: txHash
+          required: true
+          schema:
+            type: string
+            pattern: '^0x[a-fA-F0-9]{64}$'
+          description: Transaction hash (0x-prefixed 64-character hex string)
+          example: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+      responses:
+        '200':
+          description: Token IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenIds'
+              example:
+                txHash: "0x123..."
+                adminId: "abc123..."
+                tokenIds: ["1", "2", "3"]
+        '400':
+          description: Invalid transaction hash, missing admin ID, or transaction failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - Invalid token or admin ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Transaction receipt not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /generateAddress:
+    get:
+      summary: Generate a new Ethereum address
+      description: Generates a new Ethereum address with private key. No authentication required.
+      tags:
+        - Address Generation
+      responses:
+        '200':
+          description: Address generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+              example:
+                address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+                private: "0x1234567890abcdef..."
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /upload/ipfs-image:
     post:
-      summary: Upload a image  to IPFS
+      summary: Upload a image to IPFS
       tags:
         - IPFS
       security:
         - bearerAuth: []
-
-      parameters:
-        - in: header
-          name: x-application-vkn
-          required: true
-          description: Application ID
-          schema:
-            type: string
-            example: VOTTUN123
-
+      # parameters:
+      #   - in: header
+      #     name: x-api-key
+      #     required: true
+      #     description: Application ID
+      #     schema:
+      #       type: string
+      #     example: VOTTUN123
       requestBody:
         required: true
         content:
@@ -44,39 +488,24 @@ paths:
                 file:
                   type: string
                   format: binary
-
       responses:
-        "201":
+        '201':
           description: File uploaded successfully
-        "400":
+        '400':
           description: Missing filename or file
-
-        "401":
+        '401':
           description: Unauthorized client
+        '503':
+          description: Upload failed
 
-        "503":
-          description: Upload failed  
-
-
-
-
-/upload/ipfs-metadata:
+  /upload/ipfs-metadata:
     post:
-      summary: Upload a metadata  to IPFS
+      summary: Upload a metadata to IPFS
       tags:
         - IPFS
       security:
         - bearerAuth: []
-
-      parameters:
-        - in: header
-          name: x-application-vkn
-          required: true
-          description: Application ID
-          schema:
-            type: string
-            example: VOTTUN123
-
+       
       requestBody:
         required: true
         content:
@@ -128,15 +557,12 @@ paths:
                   type: object
                   example:
                     extraField: "Some value"
-
-
       responses:
-       "201":
-         description: File uploaded successfully
-      "400":
-        description: Missing filename or file
-      "401":
-        description: Unauthorized client
-      "503":
-        description: Upload failed
-     
+        '201':
+          description: File uploaded successfully
+        '400':
+          description: Missing filename or file
+        '401':
+          description: Unauthorized client
+        '503':
+          description: Upload failed

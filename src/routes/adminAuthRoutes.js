@@ -15,7 +15,7 @@ const { authenticateAdmin } = require('../middleware/adminAuthMiddleware');
 router.post('/add', addAdmin);
 
 // Public route - Get admin user info and JWT token (no authentication required)
-// Accepts email as query parameter (GET) or in body (POST)
+// Accepts email as query parameter (GET)
 // Returns admin's hashed ID and JWT token
 router.get('/user', getAdminUser);
 
