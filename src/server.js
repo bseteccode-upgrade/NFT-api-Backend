@@ -5,7 +5,6 @@ const dotenv = require('dotenv');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const { swaggerUi, swaggerSpec } = require("../swagger");
 
 // Load environment variables
@@ -35,8 +34,9 @@ BigInt.prototype.toJSON = function () { return this.toString(); };
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Use Express built-in body parser (Express 5.x compatible)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const PORT = Number(process.env.PORT || 3000);
 
