@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { deploycontract, mintnfts, settokenuris, gettokenuri } = require('../controllers/NFTController');
+const { deploycontract, mintnfts, settokenuris, gettokenuri, getbalance, getOwner, transfernft } = require('../controllers/NFTController');
 
 const { authenticateAdmin } = require('../middleware/adminAuthMiddleware');
 
@@ -13,5 +13,9 @@ router.post('/deploy', deploycontract);
 router.post('/mint', mintnfts);
 router.post('/settoken', settokenuris);
 router.post('/gettokenuri', gettokenuri);
+router.post('/getbalance', getbalance);
+router.post('/getowner', getOwner);
+router.post('/transfer', transfernft);
+
 
 module.exports = router;

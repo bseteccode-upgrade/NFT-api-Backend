@@ -200,6 +200,9 @@ async function gettokenuri(req, res) {
         if (!tokenId || !contractAddress) {
             return res.status(400).json({ status: false, error: "TokenId & contractAddress is required" });
         }
+        if (!network) {
+            network = process.env.ARBITRUM_SEPOLIA_CHAINID
+        }
         const nftcontract = await getcontractconnection(network, contractAddress)
         const uri = await nftcontract.tokenURI(tokenId)
         return res.json({
@@ -214,10 +217,142 @@ async function gettokenuri(req, res) {
     }
 }
 
+async function getbalance(req, res) {
+    try {
+        console.log('-----------------enteredfunction')
+        const { address, network, contractAddress } = req.body;
+        //balanceOf(address
+        const adminId = req.headers['x-api-key'];
+        const getAdminvalidation = await adminIdValidation(adminId, Admin)
+        console.log(adminId, getAdminvalidation, '-------------------------AdminID')
+        if (getAdminvalidation.error !== "") {
+            return res.status(401).json({
+                error: getAdminvalidation.error,
+                message: getAdminvalidation.message
+            })
+        }
+        if (!address || !contractAddress) {
+            return res.status(400).json({ status: false, error: "Address & contractAddress is required" });
+        }
+        if (!network) {
+            network = process.env.ARBITRUM_SEPOLIA_CHAINID
+        }
+        const nftcontract = await getcontractconnection(network, contractAddress)
+        const balance = await nftcontract.balanceOf(address)
+        return res.json({
+            status: true,
+            message: "Token Uri Fetched successfully",
+            Balance: balance,
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: err.message });
+    }
+}
+
+async function getOwner(req, res) {
+    try {
+        console.log('-----------------enteredfunction')
+        const { network, contractAddress } = req.body;
+        //balanceOf(address
+        const adminId = req.headers['x-api-key'];
+        const getAdminvalidation = await adminIdValidation(adminId, Admin)
+        console.log(adminId, getAdminvalidation, '-------------------------AdminID')
+        if (getAdminvalidation.error !== "") {
+            return res.status(401).json({
+                error: getAdminvalidation.error,
+                message: getAdminvalidation.message
+            })
+        }
+        if (!contractAddress) {
+            return res.status(400).json({ status: false, error: "ContractAddress is required" });
+        }
+        if (!network) {
+            network = process.env.ARBITRUM_SEPOLIA_CHAINID
+        }
+        const nftcontract = await getcontractconnection(network, contractAddress)
+        const owner = await nftcontract.owner()
+
+        return res.json({
+            status: true,
+            message: "Contract Owner fetched successfully",
+            Owner: owner,
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: err.message });
+    }
+}
+
+async function transfernft(req, res) {
+    try {
+        console.log('-----------------enteredfunction')
+        const { network, contractAddress, tokenId, from, to } = req.body;
+        //balanceOf(address
+        const adminId = req.headers['x-api-key'];
+        const getAdminvalidation = await adminIdValidation(adminId, Admin)
+        console.log(adminId, getAdminvalidation, '-------------------------AdminID')
+        if (getAdminvalidation.error !== "") {
+            return res.status(401).json({
+                error: getAdminvalidation.error,
+                message: getAdminvalidation.message
+            })
+        }
+        if (!contractAddress || !tokenId || !from || !to) {
+            return res.status(400).json({ status: false, error: "Contract address , id, from and to address are required." });
+        }
+        if (!network) {
+            network = process.env.ARBITRUM_SEPOLIA_CHAINID
+        }
+        console.log(req.body, '--------------------------bodyofthen')
+        const nftcontract = await getcontractconnection(network, contractAddress)
+        const owner = await nftcontract.transferToken(from, to, tokenId)
+        console.log("Tx sent:", owner.hash);
+        const receipt = await owner.wait();
+        console.log(receipt, '---------------------------Logs of the reciept')
+        console.log(owner, '---------------------------tx')
+        console.log("Tx confirmed:", receipt.hash);
+        const event = receipt.logs
+            .map(log => {
+                try { return nftcontract.interface.parseLog(log); }
+                catch { return null }
+            })
+            .find(e => e && e.name === "NFTTransferred");
+        if (!event) {
+            console.error(" NFTTransferred event NOT found!");
+            return res.status(500).json({
+                status: false,
+                message: "Transferring NFT failed — event not emitted",
+                txhash: tx.hash,
+                logs: receipt.logs.map(l => l.topics)
+            });
+        }
+        console.log(event?.args, '------------___Argument')
+        const sender = event?.args.from
+        const tokenID = event?.args.tokenId
+        const reciever = event?.args.to
+        return res.json({
+            status: true,
+            message: `Token ${tokenID} transferred to ${reciever} successfully`,
+            sender,
+            tokenID,
+            reciever,
+            txhash: receipt.hash
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: err.message });
+    }
+}
+
+
 module.exports = {
     deploycontract,
     mintnfts,
     settokenuris,
-    gettokenuri
+    gettokenuri,
+    getbalance,
+    getOwner,
+    transfernft
 };
 

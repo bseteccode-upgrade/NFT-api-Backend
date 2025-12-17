@@ -10,7 +10,7 @@ async function getcontractconnection(network, contractAddress) {
     const provider = new ethers.JsonRpcProvider(rpc_url);
     const wallet = new ethers.Wallet(process.env.ARBITRUM_PRIVATE_KEY, provider);
     const contract = new ethers.Contract(Address, abi, wallet);
-    console.log(rpc_url, process.env.ARBITRUM_PRIVATE_KEY, Address, '-------------list')
+    console.log(rpc_url, process.env.ARBITRUM_PRIVATE_KEY, Address, '-------------l0ist')
     console.log(network, contract, 'NETWORK')
     return contract;
 }
