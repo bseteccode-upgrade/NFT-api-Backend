@@ -724,6 +724,129 @@ paths:
         "500":
           description: Server error while replacing URIs
 
+  /nft/getbalance:
+    post:
+      summary: To get the balance of the user
+      tags:
+        - NFT
+      security:
+        - bearerAuth: []
+        - apiIdAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contractAddress
+                - network
+              properties:
+                contractAddress:
+                  type: string
+                  example: "0xA12...45678"
+                address:
+                  type: string
+                  example: "0xA12...45678"
+                network:
+                  type: string
+                  description: Optional blockchain network chain ID
+                  example: "421614"
+      responses:
+        "200":
+          description: Balance fetched successfully
+        "400":
+          description: Missing or invalid required fields
+        "401":
+          description: Unauthorized client
+        "500":
+          description: Server error while fetching URIs   
+
+  /nft/getowner :
+    post:
+      summary: To get the Owner of the user
+      tags:
+        - NFT
+      security:
+        - bearerAuth: []
+        - apiIdAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contractAddress
+                - network
+              properties:
+                contractAddress:
+                  type: string
+                  example: "0xA12...45678"
+                network:
+                  type: string
+                  description: Optional blockchain network chain ID
+                  example: "421614"
+      responses:
+        "200":
+          description: Owner of the contract fetched successfully
+        "400":
+          description: Missing or invalid required fields
+        "401":
+          description: Unauthorized client
+        "500":
+          description: Server error while fetching URIs   
+
+  /nft/transfer :
+    post:
+      summary: To Transfer the token from the user 
+      tags:
+        - NFT
+      security:
+        - bearerAuth: []
+        - apiIdAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contractAddress
+                - network
+                - from 
+                - to 
+                - tokenId
+              properties:
+                contractAddress:
+                  type: string
+                  example: "0xA12...45678"
+                network:
+                  type: string
+                  description: Optional blockchain network chain ID
+                  example: "421614"
+                from:
+                  type: string
+                  description: The user who wants to send the token 
+                  example: "0xA12...45678"
+                to:
+                  type: string
+                  description: The user who wants to recieve the token 
+                  example: "0xA12...45678"
+                tokenId:
+                  type: number
+                  description: The token which the user needs to send
+                  example: "1"
+      responses:
+        "200":
+          description: Owner of the contract fetched successfully
+        "400":
+          description: Missing or invalid required fields
+        "401":
+          description: Unauthorized client
+        "500":
+          description: Server error while fetching URIs   
+
   /nft/gettokenuri:
     post:
       summary: To get a new token uri
@@ -762,4 +885,6 @@ paths:
         "401":
           description: Unauthorized client
         "500":
-          description: Server error while fetching URIs        
+          description: Server error while fetching URIs
+
+ 
