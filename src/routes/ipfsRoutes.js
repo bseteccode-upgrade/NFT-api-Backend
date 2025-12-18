@@ -9,7 +9,8 @@ const { authenticateAdmin } = require('../middleware/adminAuthMiddleware');
 // Protect all transaction routes with admin authentication
 router.use(authenticateAdmin);
 // Upload IPFS image to pinata
-router.post('/ipfs-image', upload.single("file"), uploadToIPFS);
+// Accept multipart/form-data; Python client is sending both `file` and `filename` inside `files`
+router.post('/ipfs-image', upload.any(), uploadToIPFS);
 // Upload metadata to pinata
 router.post('/ipfs-metadata', uploadMetadataToIPFS);
 

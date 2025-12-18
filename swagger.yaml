@@ -7,7 +7,7 @@ info:
     name: API Support
 
 servers:
-  - url: http://localhost:3002
+  - url: http://localhost:3001
     description: Development server
 
 components:
