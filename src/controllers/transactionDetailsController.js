@@ -19,8 +19,12 @@ function isValidTxHash(hash) {
 
 async function getTransactionDetails(req, res, next) {
   try {
-    const { txHash } = req.params;
-    const rpcUrl = process.env.ARBITRUM_RPC_URL;
+    let { txHash, network } = req.params;
+    if (!network) {
+      network = process.env.ARBITRUM_SEPOLIA_CHAINID
+    }
+    const rpcUrl = network === "42170" ? process.env.ARBITRUM_NOVA_RPC_URL : process.env.ARBITRUM_RPC_URL;
+    // const rpcUrl = process.env.ARBITRUM_RPC_URL;
 
     // Get admin ID from header (x-api-key)
     const adminId = req.headers['x-api-key'];
@@ -99,8 +103,11 @@ async function getTransactionDetails(req, res, next) {
  */
 async function getTransactionStatus(req, res, next) {
   try {
-    const { txHash } = req.params;
-    const rpcUrl = process.env.ARBITRUM_RPC_URL;
+    let { txHash, network } = req.params;
+    if (!network) {
+      network = process.env.ARBITRUM_SEPOLIA_CHAINID
+    }
+    const rpcUrl = network === "42170" ? process.env.ARBITRUM_NOVA_RPC_URL : process.env.ARBITRUM_RPC_URL;
 
     // Get admin ID from header (x-api-key)
     const adminId = req.headers['x-api-key'];
@@ -205,6 +212,7 @@ async function getTransactionStatus(req, res, next) {
         : 'Transaction confirmed but failed (reverted).',
       adminId: adminId,
       blockNumber: receipt.blockNumber,
+      receipt: receipt,
       blockHash: receipt.blockHash,
       from: receipt.from,
       to: receipt.to,
@@ -228,8 +236,11 @@ async function getTransactionStatus(req, res, next) {
  */
 async function getTokenIdsFromTransaction(req, res, next) {
   try {
-    const { txHash } = req.params;
-    const rpcUrl = process.env.ARBITRUM_RPC_URL;
+    let { txHash, network } = req.params;
+    if (!network) {
+      network = process.env.ARBITRUM_SEPOLIA_CHAINID
+    }
+    const rpcUrl = network === "42170" ? process.env.ARBITRUM_NOVA_RPC_URL : process.env.ARBITRUM_RPC_URL;
 
     // Get admin ID from header (x-api-key)
     const adminId = req.headers['x-api-key'];

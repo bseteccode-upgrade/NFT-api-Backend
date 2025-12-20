@@ -22,6 +22,15 @@ function isValidEmail(email) {
 }
 
 /**
+ * Validate Ethereum contract address format
+ */
+function isValidContractAddress(address) {
+  // Ethereum address should be 42 characters (0x + 40 hex characters)
+  const addressRegex = /^0x[a-fA-F0-9]{40}$/;
+  return addressRegex.test(address);
+}
+
+/**
  * Check if any admin exists in database
  */
 async function checkIfAnyAdminExists() {
@@ -85,7 +94,7 @@ async function addAdmin(req, res, next) {
   try {
     console.log('addAdmin called - Request body:', JSON.stringify(req.body));
     console.log('Request headers:', JSON.stringify(req.headers));
-    const { email } = req.body;
+    const { email, contractAddress } = req.body;
     
     // Validation
     if (!email) {
@@ -117,11 +126,39 @@ async function addAdmin(req, res, next) {
     // Check if this is the first admin (super admin)
     const isFirstAdmin = !(await checkIfAnyAdminExists());
 
-    // Create admin with only email
-    const admin = await Admin.create({
+    // Contract address validation
+    // Super admin doesn't need contract address, but normal admins do
+    if (!isFirstAdmin) {
+      // Normal admin - contract address is required
+      if (!contractAddress) {
+        return res.status(400).json({
+          error: 'Contract address is required',
+          message: 'Contract address is required for normal admins. Super admin does not need a contract address.',
+        });
+      }
+
+      // Validate contract address format
+      if (!isValidContractAddress(contractAddress)) {
+        return res.status(400).json({
+          error: 'Invalid contract address format',
+          message: 'Contract address must be a valid Ethereum address (0x followed by 40 hexadecimal characters).',
+        });
+      }
+    }
+
+    // Prepare admin data
+    const adminData = {
       email: email.toLowerCase(),
       isActive: true,
-    });
+    };
+
+    // Only add contract address if provided (for normal admins)
+    if (contractAddress) {
+      adminData.contractAddress = contractAddress;
+    }
+
+    // Create admin
+    const admin = await Admin.create(adminData);
 
     let token;
     let isSuperAdmin = false;
@@ -154,6 +191,7 @@ async function addAdmin(req, res, next) {
         hashedId: hashedAdminId,
         email: admin.email,
         isActive: admin.isActive,
+        contractAddress: admin.contractAddress || null,
         createdAt: admin.createdAt,
         isSuperAdmin,
       },
@@ -211,7 +249,7 @@ async function getAdminUser(req, res, next) {
         email: email.toLowerCase(),
         isActive: true 
       },
-      attributes: ['id', 'email', 'isActive', 'createdAt', 'updatedAt'],
+      attributes: ['id', 'email', 'isActive', 'contractAddress', 'createdAt', 'updatedAt'],
     });
 
     if (!admin) {
@@ -238,6 +276,7 @@ async function getAdminUser(req, res, next) {
         hashedId: hashedAdminId,
         email: admin.email,
         isActive: admin.isActive,
+        contractAddress: admin.contractAddress || null,
         createdAt: admin.createdAt,
         updatedAt: admin.updatedAt,
         isSuperAdmin: isSuperAdmin || false,

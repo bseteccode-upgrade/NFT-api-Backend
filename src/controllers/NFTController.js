@@ -9,15 +9,7 @@ async function deploycontract(req, res, next) {
     try {
         let { name, symbol, network } = req.body;
         // Get admin ID from header (x-api-key)
-        const adminId = req.headers['x-api-key'];
-        const getAdminvalidation = await adminIdValidation(adminId, Admin)
-
-        if (getAdminvalidation.error !== "") {
-            return res.status(401).json({
-                error: getAdminvalidation.error,
-                message: getAdminvalidation.message
-            })
-        }
+       
         if (!name || !symbol) {
             return res.status(400).json({ error: "name & symbol are required" });
         }
