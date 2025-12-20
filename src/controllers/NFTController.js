@@ -8,15 +8,7 @@ async function deploycontract(req, res, next) {
     try {
         let { name, symbol, network } = req.body;
         // Get admin ID from header (x-api-key)
-        const adminId = req.headers['x-api-key'];
-        const getAdminvalidation = await adminIdValidation(adminId, Admin)
-
-        if (getAdminvalidation.error !== "") {
-            return res.status(401).json({
-                error: getAdminvalidation.error,
-                message: getAdminvalidation.message
-            })
-        }
+       
         if (!name || !symbol) {
             return res.status(400).json({ error: "name & symbol are required" });
         }
@@ -62,22 +54,21 @@ async function deploycontract(req, res, next) {
 
 async function mintnfts(req, res) {
     try {
-        let { contractAddress, recipientAddress, ipfsUri, network } = req.body;
+        let { contractAddress, recipientAddresses, tokenUris, network } = req.body;
         console.log(req.body, '------------body');
         // Get admin ID from header (x-api-key)
         const adminId = req.headers['x-api-key'];
         const getAdminvalidation = await adminIdValidation(adminId, Admin)
-        console.log(adminId, getAdminvalidation, '-------------------------AdminID')
         if (getAdminvalidation.error !== "") {
             return res.status(401).json({
                 error: getAdminvalidation.error,
                 message: getAdminvalidation.message
             })
         }
-        if (!contractAddress || recipientAddress.length <= 0 || ipfsUri.length <= 0) {
+        if (!contractAddress || recipientAddresses.length <= 0 || tokenUris.length <= 0) {
             return res.status(400).json({ status: false, error: "Contract Address , recipient Address , tokenuris are required" });
         }
-        if (recipientAddress.length !== ipfsUri.length) {
+        if (recipientAddresses.length !== tokenUris.length) {
             return res.status(400).json({ status: false, error: "Reciepient address and the token uri doesn't match" });
         }
         if (!network) {
@@ -86,7 +77,7 @@ async function mintnfts(req, res) {
 
         const nftcontract = await getcontractconnection(network, contractAddress)
 
-        const tx = await nftcontract.mintToMany(recipientAddress, ipfsUri)
+        const tx = await nftcontract.mintToMany(recipientAddresses, tokenUris)
         console.log("Tx sent:", tx.hash);
         const receipt = await tx.wait();
         console.log(receipt, '---------------------------Logs of the reciept')
@@ -115,7 +106,7 @@ async function mintnfts(req, res) {
             message: "Nft Minted successfully",
             recievers,
             tokenIDs,
-            txhash: tx.hash
+            txHash: tx.hash
         });
     } catch (err) {
         console.error(err);
@@ -125,21 +116,20 @@ async function mintnfts(req, res) {
 
 async function settokenuris(req, res) {
     try {
-        let { contractAddress, tokenIds, ipfsUris, network } = req.body;
+        let { contractAddress, tokenIds, tokenUris, network } = req.body;
         console.log(req.body, '------------body');
         const adminId = req.headers['x-api-key'];
         const getAdminvalidation = await adminIdValidation(adminId, Admin)
-        console.log(adminId, getAdminvalidation, '-------------------------AdminID')
         if (getAdminvalidation.error !== "") {
             return res.status(401).json({
                 error: getAdminvalidation.error,
                 message: getAdminvalidation.message
             })
         }
-        if (!contractAddress || tokenIds.length <= 0 || ipfsUris.length <= 0) {
+        if (!contractAddress || tokenIds.length <= 0 || tokenUris.length <= 0) {
             return res.status(400).json({ status: false, error: "Contract Address , TokenIds , tokenuris are required" });
         }
-        if (tokenIds.length !== ipfsUris.length) {
+        if (tokenIds.length !== tokenUris.length) {
             return res.status(400).json({ status: false, error: "Token Ids and the Token uris doesn't match" });
         }
         if (!network) {
@@ -147,7 +137,7 @@ async function settokenuris(req, res) {
         }
 
         const nftcontract = await getcontractconnection(network, contractAddress)
-        const tx = await nftcontract.setTokenURI(tokenIds, ipfsUris)
+        const tx = await nftcontract.setTokenURI(tokenIds, tokenUris)
         console.log("Tx sent:", tx.hash);
         const receipt = await tx.wait();
         console.log(receipt, '---------------------------Logs of the reciept')

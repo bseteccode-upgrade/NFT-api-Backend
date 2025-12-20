@@ -15,8 +15,9 @@ const Admin = require('../models/Admin');
  */
 async function uploadToIPFS(req, res) {
   try {
-    console.log("HEADERS:", req.headers);
-    console.log("BODY:", req.body);
+    // console.log("HEADERS------uploadToIPFS---111:", req.headers);
+    console.log("FILES:-------------", req.file);
+    console.log("BODY:--------------", req.body);
 
 
     // --- AUTH ---
@@ -32,9 +33,19 @@ async function uploadToIPFS(req, res) {
     }
 
     // --- INPUT VALIDATION ---
-    const filename = req.body.filename;
-    const file = req.file;
+    // Support both multer.single (req.file) and multer.any (req.files)
+    const filesArray = Array.isArray(req.files) ? req.files : [];
+    const fileFromAny = filesArray.find(f => f.fieldname === "file");
+    const file = req.file || fileFromAny;
 
+    // Python client is sending `filename` as another multipart part; it may land
+    // either in req.body (if text) or as a file entry (if sent as "files" dict).
+    const filenameFromBody = req.body?.filename || req.body?.fileName || req.body?.name;
+    const filenameFilePart = filesArray.find(f => f.fieldname === "filename");
+    const filenameFromFilePart = filenameFilePart ? filenameFilePart.buffer?.toString() || filenameFilePart.originalname : undefined;
+    const filename = filenameFromBody || filenameFromFilePart || (file && file.originalname);
+    console.log("file============== : ", file)
+    console.log("filename============ : ", filename)
     if (!filename || !file) {
       return res.status(400).json({ error: "filename and file are required" });
     }
@@ -52,7 +63,7 @@ async function uploadToIPFS(req, res) {
       pinataMetadata: { name: filename },
     });
 
-    return res.status(201).json({
+    return res.status(200).json({
       hash: `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}`,
     });
 
@@ -68,6 +79,8 @@ async function uploadToIPFS(req, res) {
  */
 async function uploadMetadataToIPFS(req, res) {
   try {
+    console.log("req.headers=============== : ", req.headers)
+    console.log("req.body------------- : ", req.body)
     const adminId = req.headers['x-api-key'];
     // Validate admin ID
     const getAdminvalidation = await adminIdValidation(adminId, Admin)
@@ -156,8 +169,8 @@ async function uploadMetadataToIPFS(req, res) {
     const timestamp = generateCustomTimestamp();
 
 
-    return res.status(201).json({
-      IpfsHash: gatewayURL,
+    return res.status(200).json({
+      hash: gatewayURL,
       PinSize: pinSize,
       Timestamp: timestamp
     });

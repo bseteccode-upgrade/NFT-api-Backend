@@ -10,8 +10,8 @@ const { authenticateAdmin } = require('../middleware/adminAuthMiddleware');
 router.use(authenticateAdmin);
 
 router.post('/deploy', deploycontract);
-router.post('/mint', mintnfts);
-router.post('/settoken', settokenuris);
+router.post('/batchMint', mintnfts);
+router.post('/tokenUriUpdateBatch', settokenuris);
 router.post('/gettokenuri', gettokenuri);
 router.post('/getbalance', getbalance);
 router.post('/getowner', getOwner);

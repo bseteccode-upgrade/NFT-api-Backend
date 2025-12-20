@@ -5,7 +5,7 @@ const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "ETH -Accounts",
+      title: "NFT Implementaion",
       version: "1.0.0",
       description: "API documentation for NFT",
     },

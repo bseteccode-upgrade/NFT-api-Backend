@@ -12,12 +12,17 @@ const getRpcParams = (method, txHash, id) => {
 }
 
 const getRpcResponse = async (rpcUrl, body) => {
-    const response = await fetch(rpcUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-    });
-    return response
+    try {
+        const response = await fetch(rpcUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        return response
+    } catch (err) {
+        return err
+    }
+
 }
 
 const adminIdValidation = async (adminId, Admin) => {

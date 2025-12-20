@@ -25,6 +25,11 @@ const Admin = sequelize.define('Admin', {
     defaultValue: true,
     comment: 'Whether the admin account is active',
   },
+  contractAddress: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    comment: 'Contract address associated with the admin (required for normal admins, not super admin)',
+  },
   createdAt: {
     type: DataTypes.DATE,
     allowNull: false,
