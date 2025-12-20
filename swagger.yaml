@@ -642,10 +642,10 @@ paths:
                 - recipientAddress
                 - ipfsUri
               properties:
-                Contract Address:
+                contractAddress:
                   type: string
                   example: "0xA12...45678"
-                recipient Address:
+                recipientAddress:
                   type: array
                   items:
                     type: string

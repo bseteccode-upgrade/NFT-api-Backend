@@ -1,7 +1,6 @@
 'use strict';
 
 const { getcontractconnection } = require("../utils/helper")
-const Nft = require("../abi/NFTBatch.json").abi;
 const Admin = require('../models/Admin');
 const { adminIdValidation } = require('../utils/transaction')
 
@@ -298,13 +297,14 @@ async function transfernft(req, res) {
                 message: getAdminvalidation.message
             })
         }
+        console.log(req.body, '--------------------------bodyofthen')
+
         if (!contractAddress || !tokenId || !from || !to) {
             return res.status(400).json({ status: false, error: "Contract address , id, from and to address are required." });
         }
         if (!network) {
             network = process.env.ARBITRUM_SEPOLIA_CHAINID
         }
-        console.log(req.body, '--------------------------bodyofthen')
         const nftcontract = await getcontractconnection(network, contractAddress)
         const owner = await nftcontract.transferToken(from, to, tokenId)
         console.log("Tx sent:", owner.hash);
