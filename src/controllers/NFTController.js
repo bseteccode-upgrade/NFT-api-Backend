@@ -1,14 +1,26 @@
 'use strict';
+/**
+ * NFT Admin Controller
+ * --------------------
+ * This file contains all admin-controlled NFT operations:
+ * - Deploy NFT clone contracts
+ * - Mint NFTs in batch
+ * - Update token URIs
+ * - Fetch token data
+ * - Transfer NFTs (admin-only)
+ *
+ */
 
 const { getcontractconnection } = require("../utils/helper")
 const Admin = require('../models/Admin');
 const { adminIdValidation } = require('../utils/transaction')
 
+/**
+ * Deploy a new NFT clone contract using Factory
+ */
 async function deploycontract(req, res, next) {
     try {
         let { name, symbol, network } = req.body;
-        // Get admin ID from header (x-api-key)
-       
         if (!name || !symbol) {
             return res.status(400).json({ error: "name & symbol are required" });
         }
@@ -30,7 +42,6 @@ async function deploycontract(req, res, next) {
         const cloneAddress = event?.args?.cloneAddress;
         if (!cloneAddress) {
             console.error(" CloneCreated event NOT found!");
-
             return res.status(500).json({
                 status: false,
                 message: "Clone creation failed — event not emitted",
@@ -38,20 +49,21 @@ async function deploycontract(req, res, next) {
                 logs: receipt.logs.map(l => l.topics)
             });
         }
-
         return res.json({
             status: true,
             message: "Clone created successfully",
             cloneAddress,
             txhash: tx.hash
         });
-
     } catch (err) {
         console.error(err);
         return res.status(500).json({ error: err.message });
     }
 }
 
+/**
+ * Batch mint NFTs to multiple recipients
+ */
 async function mintnfts(req, res) {
     try {
         let { contractAddress, recipientAddresses, tokenUris, network } = req.body;
@@ -114,6 +126,10 @@ async function mintnfts(req, res) {
     }
 }
 
+/**
+ * Replace token URIs in batch
+ * Useful for metadata upgrades or corrections
+ */
 async function settokenuris(req, res) {
     try {
         let { contractAddress, tokenIds, tokenUris, network } = req.body;
@@ -173,7 +189,10 @@ async function settokenuris(req, res) {
         return res.status(500).json({ error: err.message });
     }
 }
-//tokenURI
+
+/**
+ * Fetch token URI for a given token ID
+ */
 async function gettokenuri(req, res) {
     try {
         const { tokenId, network, contractAddress } = req.body;
@@ -206,6 +225,9 @@ async function gettokenuri(req, res) {
     }
 }
 
+/**
+ * Get NFT balance of a wallet address
+ */
 async function getbalance(req, res) {
     try {
         console.log('-----------------enteredfunction')
@@ -239,6 +261,9 @@ async function getbalance(req, res) {
     }
 }
 
+/**
+ * Fetch owner of the NFT contract
+ */
 async function getOwner(req, res) {
     try {
         console.log('-----------------enteredfunction')
@@ -273,6 +298,9 @@ async function getOwner(req, res) {
     }
 }
 
+/**
+ * Transfer NFT from one address to another
+ */
 async function transfernft(req, res) {
     try {
         console.log('-----------------enteredfunction')

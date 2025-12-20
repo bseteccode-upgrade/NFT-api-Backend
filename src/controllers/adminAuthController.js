@@ -14,7 +14,7 @@ const { hashAdminId } = require('../utils/encryption');
 const { JWT_SECRET } = require('../middleware/adminAuthMiddleware');
 
 /**
- * Validate email format
+ * @dev Validate email format using regex
  */
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -22,7 +22,9 @@ function isValidEmail(email) {
 }
 
 /**
- * Validate Ethereum contract address format
+ * @dev Validate Ethereum smart contract address format
+ * - Must be 0x-prefixed
+ * - Must contain exactly 40 hex characters
  */
 function isValidContractAddress(address) {
   // Ethereum address should be 42 characters (0x + 40 hex characters)
@@ -31,7 +33,8 @@ function isValidContractAddress(address) {
 }
 
 /**
- * Check if any admin exists in database
+ * @dev Check whether any active admin exists
+ * Used to determine super admin creation
  */
 async function checkIfAnyAdminExists() {
   const count = await Admin.count({ where: { isActive: true } });
@@ -39,7 +42,9 @@ async function checkIfAnyAdminExists() {
 }
 
 /**
- * Get the first admin (super admin) from database
+ * @dev Retrieve the first admin (SUPER ADMIN)
+ * - Lowest ID
+ * - Active only
  */
 async function getSuperAdmin() {
   const admin = await Admin.findOne({
@@ -51,8 +56,9 @@ async function getSuperAdmin() {
 }
 
 /**
- * Generate JWT token for a given admin
- * Token never expires (no expiration time set)
+ * @dev Generate JWT token for admin
+ *
+ * - Payload contains adminId, email, role
  */
 function generateJWTTokenForAdmin(admin) {
   const token = jwt.sign(
@@ -64,38 +70,34 @@ function generateJWTTokenForAdmin(admin) {
 }
 
 /**
- * Get JWT token from environment or generate new one
- * If ADMIN_JWT_TOKEN is set in env, use it
- * Otherwise, generate new token for the admin
+ * @dev Get JWT token
+ * - Prefer ADMIN_JWT_TOKEN from environment
+ * - Fallback: generate token dynamically
  */
 async function getJWTToken(admin) {
-  // Check if token is set in environment
   const envToken = process.env.ADMIN_JWT_TOKEN;
-  
   if (envToken) {
-    // Use token from environment
     return envToken;
   }
-  
-  // Generate new token for the admin
   return generateJWTTokenForAdmin(admin);
 }
 
 /**
- * Add new admin (email only)
- * POST /admin/auth/add
- * 
- * Creates a new admin with only email.
- * - If this is the first admin (super admin), generates JWT token and returns it
- * - If admins already exist, uses ADMIN_JWT_TOKEN from environment
- * Returns hashed admin ID and JWT token.
+ * @route POST /admin/auth/add
+ * @dev Add new admin
+ *
+ * RULES:
+ * - First admin becomes SUPER ADMIN
+ * - Super admin does NOT require contract address
+ * - Normal admins MUST provide contract address
+ * - Email must be unique
  */
 async function addAdmin(req, res, next) {
   try {
     console.log('addAdmin called - Request body:', JSON.stringify(req.body));
     console.log('Request headers:', JSON.stringify(req.headers));
     const { email, contractAddress } = req.body;
-    
+
     // Validation
     if (!email) {
       console.log('Email validation failed - email is missing');
@@ -184,7 +186,7 @@ async function addAdmin(req, res, next) {
 
     const response = {
       success: true,
-      message: isSuperAdmin 
+      message: isSuperAdmin
         ? 'Super admin created successfully. Please set ADMIN_JWT_TOKEN in your .env file with the token below.'
         : 'Admin created successfully',
       admin: {
@@ -245,9 +247,9 @@ async function getAdminUser(req, res, next) {
 
     // Find admin by email
     const admin = await Admin.findOne({
-      where: { 
+      where: {
         email: email.toLowerCase(),
-        isActive: true 
+        isActive: true
       },
       attributes: ['id', 'email', 'isActive', 'contractAddress', 'createdAt', 'updatedAt'],
     });

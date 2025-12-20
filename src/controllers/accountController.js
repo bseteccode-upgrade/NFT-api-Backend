@@ -4,8 +4,11 @@ const { default: Wallet } = require('ethereumjs-wallet');
 
 
 /**
- * Create next account with auto-incremented index
- * Only stores the index, not the account details
+ * @dev Create a new Ethereum account
+ * 1. Generate a random Ethereum wallet
+ * 2. Extract public address
+ * 3. Extract private key
+ * 4. Return both in the response
  */
 async function createAccount(req, res, next) {
   try {

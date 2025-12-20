@@ -5,6 +5,11 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+/**
+ * @dev Create a Sequelize instance
+ * - Uses environment variables when available
+ * - Falls back to sensible defaults for local development
+ */
 const sequelize = new Sequelize(
   process.env.DB_NAME || 'eth_accounts',
   process.env.DB_USER || 'postgres',
@@ -23,6 +28,10 @@ const sequelize = new Sequelize(
   }
 );
 
+/**
+ * @dev Test database connectivity
+ * @returns {Promise<boolean>} true if connected, false otherwise
+ */
 async function testConnection() {
   try {
     await sequelize.authenticate();
@@ -34,6 +43,11 @@ async function testConnection() {
   }
 }
 
+/**
+ * @dev Synchronize Sequelize models with database
+ * @param {boolean} force - If true, drops and recreates tables (DANGEROUS)
+ * @returns {Promise<boolean>} true if sync successful
+ */
 async function syncDatabase(force = false) {
   try {
     await sequelize.sync({ force });

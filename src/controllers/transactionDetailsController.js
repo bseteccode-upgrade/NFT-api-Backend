@@ -13,10 +13,21 @@ const { ethers } = require('ethers');
 const { getRpcParams, getRpcResponse, adminIdValidation } = require('../utils/transaction');
 const Admin = require('../models/Admin');
 
+/**
+ * Validate Ethereum transaction hash format
+ * Must be 0x-prefixed, 32-byte hex string
+ */
 function isValidTxHash(hash) {
   return typeof hash === 'string' && /^0x[a-fA-F0-9]{64}$/.test(hash);
 }
 
+/**
+ * Fetch full transaction details by transaction hash
+ *
+ * Endpoint:
+ *   GET /getTransactionDetails/:txHash
+ *
+ */
 async function getTransactionDetails(req, res, next) {
   try {
     let { txHash, network } = req.params;
@@ -96,10 +107,8 @@ async function getTransactionDetails(req, res, next) {
  * Get transaction status (confirmed, failed, or pending)
  *
  * Endpoint (via router prefix):
- *   GET /get_Transaction_status/:txHash
+ *   GET /getTransactionDetails/txInfo/:txHash
  *
- * Env variables:
- *   ARBITRUM_RPC_URL - required, your Arbitrum Sepolia RPC URL
  */
 async function getTransactionStatus(req, res, next) {
   try {
@@ -229,10 +238,8 @@ async function getTransactionStatus(req, res, next) {
  * Extracts token IDs from ERC-721 Transfer events
  *
  * Endpoint (via router prefix):
- *   GET /get_Transaction_details/token-ids/:txHash
+ *   GET /getTransactionDetails/token-ids/:txHash
  *
- * Env variables:
- *   ARBITRUM_RPC_URL - required, your Arbitrum Sepolia RPC URL
  */
 async function getTokenIdsFromTransaction(req, res, next) {
   try {
@@ -345,7 +352,9 @@ async function getTokenIdsFromTransaction(req, res, next) {
   }
 }
 
-// ERC 721 Transaction validation
+/**
+ * Shared validation helper for ERC-721 transaction checks
+ */
 const erc721TransactionValidation = (txHash, rpcUrl) => {
   if (!txHash || !isValidTxHash(txHash)) {
     return {
